@@ -1,0 +1,10 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+data/
+.claude/
+claude.md
+CLAUDE.md
+learning_journal.md
+output.png
