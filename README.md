@@ -1,10 +1,10 @@
 # Visual Defect Detection
 
-Computer vision pipeline for industrial defect detection on the [MVTec Anomaly Detection](https://www.mvtec.com/company/research/datasets/mvtec-ad) dataset using transfer learning and OpenCV-based image preprocessing.
+Computer vision pipeline for industrial defect detection on the [MVTec Anomaly Detection](https://www.mvtec.com/company/research/datasets/mvtec-ad) dataset. Benchmarks CNN and Transformer architectures spanning supervised, unsupervised, and zero-shot paradigms.
 
 ## Problem
 
-Manufacturing defect detection requires identifying anomalies in high-resolution product images. This project benchmarks CNN-based transfer learning approaches on the MVTec AD dataset with a focus on practical tradeoffs: label requirements, AUROC, and defect recall.
+Manufacturing defect detection requires identifying anomalies in high-resolution product images. This project benchmarks vision architectures on MVTec AD with a focus on practical tradeoffs: label requirements, AUROC, and defect recall.
 
 ## Dataset
 
@@ -20,34 +20,22 @@ Each image is preprocessed using OpenCV before model inference:
 - **Adaptive thresholding** — isolates regions of interest
 - **Weighted combination** — blends original RGB + edge + threshold signals
 
-## Models
+## Results
 
-### ResNet-18 (Transfer Learning)
-Pretrained on ImageNet. Final layer replaced with `Linear(512, 2)` for binary classification. Early layers frozen.
-
-| Metric | Value |
-|--------|-------|
-| Accuracy | 83% |
-| AUROC | 0.8947 |
-| Defect Recall | 0.95 |
-| Normal Recall | 0.25 |
-
-### EfficientNet-B0 (Transfer Learning)
-Pretrained on ImageNet. Final classifier replaced with `Linear(1280, 2)`. Early layers frozen.
-
-| Metric | Value |
-|--------|-------|
-| Accuracy | 87% |
-| AUROC | 0.9737 |
-| Defect Recall | 0.95 |
-| Normal Recall | 0.50 |
+| Model | Type | Accuracy | AUROC | Defect Recall | Normal Recall |
+|-------|------|----------|-------|---------------|---------------|
+| ResNet-18 | Supervised CNN | 83% | 0.8947 | 0.95 | 0.25 |
+| EfficientNet-B0 | Supervised CNN | 87% | 0.9737 | 0.95 | 0.50 |
+| ViT-Base | Supervised Transformer | 91% | 1.0000 | 0.89 | 1.00 |
+| Swin-Tiny | Supervised Transformer | 83% | 0.8000 | 1.00 | 0.00 |
 
 ## Key Findings
 
-- EfficientNet-B0 outperforms ResNet-18 on AUROC (0.97 vs 0.89) with less overfitting, validating compound scaling on small datasets
-- Both models achieve 95% defect recall — catching 18 of 19 defects in the test set
-- ResNet-18 shows overfitting after epoch 10; EfficientNet generalizes better across 20 epochs
-- High false alarm rate on normal images due to class imbalance (81% defective in dataset)
+- EfficientNet-B0 achieves the best balance — 0.97 AUROC and 95% defect recall, making it most suitable for manufacturing where missing a defect is catastrophic
+- ViT-Base achieves perfect AUROC (1.0) on the test set but lower defect recall (0.89) than EfficientNet; result should be validated on a larger test set
+- Swin-Tiny collapses to predicting everything as defective — local window attention insufficient to learn class separation with only 92 training images
+- All models show overfitting after epoch 10 due to small dataset (92 training images); transfer learning mitigates but does not eliminate this
+- ResNet-18 and Swin-Tiny show identical accuracy (83%) for different reasons — ResNet catches more normals, Swin catches more defects
 
 ## Project Structure
 
@@ -58,20 +46,26 @@ Pretrained on ImageNet. Final classifier replaced with `Linear(1280, 2)`. Early 
 ├── preprocess.py              # OpenCV preprocessing pipeline
 ├── phase1_resnet.py           # ResNet-18 transfer learning
 ├── phase1_efficientnet.py     # EfficientNet-B0 transfer learning
-├── resnet_curves.png          # ResNet training/test loss and accuracy curves
+├── phase2_vit.py              # ViT-Base fine-tuning
+├── phase2_swin.py             # Swin-Tiny fine-tuning
+├── resnet_curves.png          # ResNet training/test curves
 ├── resnet_confusion.png       # ResNet confusion matrix
-├── efficientnet_curves.png    # EfficientNet training/test loss and accuracy curves
-└── efficientnet_confusion.png # EfficientNet confusion matrix
+├── efficientnet_curves.png    # EfficientNet training/test curves
+├── efficientnet_confusion.png # EfficientNet confusion matrix
+├── vit_curves.png             # ViT training/test curves
+├── vit_confusion.png          # ViT confusion matrix
+├── swin_curves.png            # Swin training/test curves
+└── swin_confusion.png         # Swin confusion matrix
 ```
 
 ## Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/visual-defect-detection
-cd visual-defect-detection
+git clone https://github.com/kmaurya9/visual-defect-detection-
+cd visual-defect-detection-
 python -m venv venv
 source venv/bin/activate
-pip install torch torchvision scikit-learn matplotlib seaborn pillow opencv-python
+pip install torch torchvision timm scikit-learn matplotlib seaborn pillow opencv-python
 ```
 
 Download MVTec AD from [mvtec.com](https://www.mvtec.com/company/research/datasets/mvtec-ad) and place under `data/`.
@@ -79,4 +73,6 @@ Download MVTec AD from [mvtec.com](https://www.mvtec.com/company/research/datase
 ```bash
 python phase1_resnet.py
 python phase1_efficientnet.py
+python phase2_vit.py
+python phase2_swin.py
 ```
