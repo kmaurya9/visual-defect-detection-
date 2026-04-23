@@ -22,20 +22,23 @@ Each image is preprocessed using OpenCV before model inference:
 
 ## Results
 
-| Model | Type | Accuracy | AUROC | Defect Recall | Normal Recall |
-|-------|------|----------|-------|---------------|---------------|
-| ResNet-18 | Supervised CNN | 83% | 0.8947 | 0.95 | 0.25 |
-| EfficientNet-B0 | Supervised CNN | 87% | 0.9737 | 0.95 | 0.50 |
-| ViT-Base | Supervised Transformer | 91% | 1.0000 | 0.89 | 1.00 |
-| Swin-Tiny | Supervised Transformer | 83% | 0.8000 | 1.00 | 0.00 |
+| Model | Type | AUROC | Labels needed? |
+|-------|------|-------|----------------|
+| ResNet-18 | Supervised CNN | 0.8947 | Yes |
+| EfficientNet-B0 | Supervised CNN | 0.9737 | Yes |
+| ViT-Base | Supervised Transformer | 1.0000 | Yes |
+| Swin-Tiny | Supervised Transformer | 0.8000 | Yes |
+| DINOv2 + kNN | Unsupervised | 0.9413 | No (normal images only) |
+| CLIP zero-shot | Zero-shot VLM | 0.6628 | No (nothing) |
 
 ## Key Findings
 
-- EfficientNet-B0 achieves the best balance — 0.97 AUROC and 95% defect recall, making it most suitable for manufacturing where missing a defect is catastrophic
-- ViT-Base achieves perfect AUROC (1.0) on the test set but lower defect recall (0.89) than EfficientNet; result should be validated on a larger test set
+- EfficientNet-B0 achieves the best supervised balance — 0.97 AUROC and 95% defect recall, most suitable where missing a defect is catastrophic
+- ViT-Base achieves perfect AUROC (1.0) on the test set but result should be validated on a larger test set (only 23 test images)
+- DINOv2 + kNN achieves 0.94 AUROC with zero defect labels — beats supervised ResNet-18, demonstrating unsupervised anomaly detection is viable for label-scarce manufacturing environments
+- CLIP zero-shot achieves 0.66 AUROC with no training and no examples, but performance is highly sensitive to prompt wording ("good"/"defective" outperformed longer descriptive prompts)
 - Swin-Tiny collapses to predicting everything as defective — local window attention insufficient to learn class separation with only 92 training images
-- All models show overfitting after epoch 10 due to small dataset (92 training images); transfer learning mitigates but does not eliminate this
-- ResNet-18 and Swin-Tiny show identical accuracy (83%) for different reasons — ResNet catches more normals, Swin catches more defects
+- All supervised models show overfitting after epoch 10 due to small dataset; transfer learning mitigates but does not eliminate this
 
 ## Project Structure
 
@@ -48,6 +51,8 @@ Each image is preprocessed using OpenCV before model inference:
 ├── phase1_efficientnet.py     # EfficientNet-B0 transfer learning
 ├── phase2_vit.py              # ViT-Base fine-tuning
 ├── phase2_swin.py             # Swin-Tiny fine-tuning
+├── phase3_dinov2.py           # DINOv2 + kNN unsupervised anomaly detection
+├── phase4_clip.py             # CLIP zero-shot defect detection
 ├── resnet_curves.png          # ResNet training/test curves
 ├── resnet_confusion.png       # ResNet confusion matrix
 ├── efficientnet_curves.png    # EfficientNet training/test curves
@@ -65,7 +70,7 @@ git clone https://github.com/kmaurya9/visual-defect-detection-
 cd visual-defect-detection-
 python -m venv venv
 source venv/bin/activate
-pip install torch torchvision timm scikit-learn matplotlib seaborn pillow opencv-python
+pip install torch torchvision timm scikit-learn matplotlib seaborn pillow opencv-python transformers
 ```
 
 Download MVTec AD from [mvtec.com](https://www.mvtec.com/company/research/datasets/mvtec-ad) and place under `data/`.
@@ -75,4 +80,6 @@ python phase1_resnet.py
 python phase1_efficientnet.py
 python phase2_vit.py
 python phase2_swin.py
+python phase3_dinov2.py
+python phase4_clip.py
 ```
