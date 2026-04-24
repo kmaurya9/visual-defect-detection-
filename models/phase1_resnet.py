@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-import timm
-from torchvision import transforms
+from torchvision import models, transforms
 from torch.utils.data import DataLoader, Dataset
 from PIL import Image
 from sklearn.model_selection import train_test_split
@@ -54,7 +53,7 @@ transform = transforms.Compose([
 ])
 
 # overall ratio = train ratio = test ratio (stratified split)
-all_dataset = MVTecDataset('data/metal_nut/test', transform=transform)
+all_dataset = MVTecDataset('../data/metal_nut/test', transform=transform)
 indices = list(range(len(all_dataset)))
 train_idx, test_idx = train_test_split(indices, test_size=0.2, random_state=42,
                                        stratify=all_dataset.labels)
@@ -71,14 +70,14 @@ print(f"Train: {len(train_dataset)} images, Test: {len(test_dataset)} images")
 
 device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
 
-model = timm.create_model('swin_tiny_patch4_window7_224', pretrained=True)
+model = models.resnet18(weights='IMAGENET1K_V1')
 for param in model.parameters():
     param.requires_grad = False
-model.reset_classifier(num_classes=2)  # timm built-in — handles Swin's internal structure safely
+model.fc = nn.Linear(model.fc.in_features, 2)  # replace final layer: 1000 → 2
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.head.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.fc.parameters(), lr=0.001)
 
 
 # ── 4. TRAINING ───────────────────────────────────────────────────────────────
@@ -174,8 +173,8 @@ plt.ylabel('Accuracy %')
 plt.legend()
 
 plt.tight_layout()
-plt.savefig('swin_curves.png')
-print("Curves saved to swin_curves.png")
+plt.savefig('../outputs/resnet_curves.png')
+print("Curves saved to resnet_curves.png")
 
 # confusion matrix
 cm = confusion_matrix(all_labels, (all_probs > 0.5).astype(int))
@@ -184,6 +183,6 @@ sns.heatmap(cm, annot=True, fmt='d', xticklabels=['normal', 'defective'],
             yticklabels=['normal', 'defective'])
 plt.ylabel('Actual')
 plt.xlabel('Predicted')
-plt.title('Swin-Tiny Confusion Matrix')
-plt.savefig('swin_confusion.png')
-print("Confusion matrix saved to swin_confusion.png")
+plt.title('ResNet-18 Confusion Matrix')
+plt.savefig('../outputs/resnet_confusion.png')
+print("Confusion matrix saved to resnet_confusion.png")

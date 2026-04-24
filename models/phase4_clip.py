@@ -60,7 +60,7 @@ for prompt_name, prompts in prompt_sets.items():
     all_scores = []
     all_labels = []
     for folder_name, label in test_folders.items():
-        path = os.path.join('data/metal_nut/test', folder_name)
+        path = os.path.join('../data/metal_nut/test', folder_name)
         folder_scores = score_folder(path, prompts)
         all_scores.extend(folder_scores)
         all_labels.extend([label] * len(folder_scores))

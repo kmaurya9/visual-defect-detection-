@@ -43,24 +43,28 @@ Each image is preprocessed using OpenCV before model inference:
 ## Project Structure
 
 ```
-├── explore.py                 # Dataset exploration and visualization
-├── mnist.py                   # MLP baseline on MNIST
-├── cnn_mnist.py               # CNN baseline on MNIST
-├── preprocess.py              # OpenCV preprocessing pipeline
-├── phase1_resnet.py           # ResNet-18 transfer learning
-├── phase1_efficientnet.py     # EfficientNet-B0 transfer learning
-├── phase2_vit.py              # ViT-Base fine-tuning
-├── phase2_swin.py             # Swin-Tiny fine-tuning
-├── phase3_dinov2.py           # DINOv2 + kNN unsupervised anomaly detection
-├── phase4_clip.py             # CLIP zero-shot defect detection
-├── resnet_curves.png          # ResNet training/test curves
-├── resnet_confusion.png       # ResNet confusion matrix
-├── efficientnet_curves.png    # EfficientNet training/test curves
-├── efficientnet_confusion.png # EfficientNet confusion matrix
-├── vit_curves.png             # ViT training/test curves
-├── vit_confusion.png          # ViT confusion matrix
-├── swin_curves.png            # Swin training/test curves
-└── swin_confusion.png         # Swin confusion matrix
+├── models/
+│   ├── phase1_resnet.py           # ResNet-18 transfer learning
+│   ├── phase1_efficientnet.py     # EfficientNet-B0 transfer learning
+│   ├── phase2_vit.py              # ViT-Base fine-tuning
+│   ├── phase2_swin.py             # Swin-Tiny fine-tuning
+│   ├── phase3_dinov2.py           # DINOv2 + kNN unsupervised anomaly detection
+│   └── phase4_clip.py             # CLIP zero-shot defect detection
+├── outputs/
+│   ├── resnet_curves.png          # ResNet training/test curves
+│   ├── resnet_confusion.png       # ResNet confusion matrix
+│   ├── efficientnet_curves.png    # EfficientNet training/test curves
+│   ├── efficientnet_confusion.png # EfficientNet confusion matrix
+│   ├── vit_curves.png             # ViT training/test curves
+│   ├── vit_confusion.png          # ViT confusion matrix
+│   ├── swin_curves.png            # Swin training/test curves
+│   ├── swin_confusion.png         # Swin confusion matrix
+│   └── dinov2_tsne.png            # DINOv2 t-SNE embedding visualization
+├── notebooks/
+│   ├── explore.py                 # Dataset exploration and visualization
+│   ├── mnist.py                   # MLP baseline on MNIST
+│   └── cnn_mnist.py               # CNN baseline on MNIST
+└── preprocess.py                  # OpenCV preprocessing pipeline (standalone)
 ```
 
 ## Setup
@@ -76,6 +80,7 @@ pip install torch torchvision timm scikit-learn matplotlib seaborn pillow opencv
 Download MVTec AD from [mvtec.com](https://www.mvtec.com/company/research/datasets/mvtec-ad) and place under `data/`.
 
 ```bash
+cd models
 python phase1_resnet.py
 python phase1_efficientnet.py
 python phase2_vit.py

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from torch import device
 
-train_dir = "/Users/kshitij/Desktop/CNN/data/metal_nut/train/good"
+train_dir = "../data/metal_nut/train/good"
 
 all_images = os.listdir(train_dir)
 selected = random.sample(all_images, 5)
@@ -23,7 +23,7 @@ for i, filename in enumerate(selected):
     axes[i].axis('off')
 
 plt.tight_layout()
-plt.savefig("output.png")
+plt.savefig("../outputs/output.png")
 plt.show()
 
 

@@ -43,7 +43,7 @@ def extract_embeddings(folder, label):
 # ── 4. EXTRACT ALL EMBEDDINGS ─────────────────────────────────────────────────
 
 print("Extracting training embeddings (normal only)...")
-train_embeddings, _ = extract_embeddings('data/metal_nut/train/good', label=0)
+train_embeddings, _ = extract_embeddings('../data/metal_nut/train/good', label=0)
 
 print("Extracting test embeddings (normal + defective)...")
 test_folders = {
@@ -57,7 +57,7 @@ test_folders = {
 test_embeddings = []
 test_labels = []
 for folder_name, label in test_folders.items():
-    path = os.path.join('data/metal_nut/test', folder_name)
+    path = os.path.join('../data/metal_nut/test', folder_name)
     emb, lbl = extract_embeddings(path, label)
     test_embeddings.append(emb)
     test_labels.extend(lbl)
@@ -106,6 +106,6 @@ for label in [0, 1]:
 
 plt.title('DINOv2 Embeddings — t-SNE Visualization')
 plt.legend()
-plt.savefig('dinov2_tsne.png')
+plt.savefig('../outputs/dinov2_tsne.png')
 print("t-SNE saved to dinov2_tsne.png")
 

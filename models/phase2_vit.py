@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from torchvision import models, transforms
+import timm
+from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
 from PIL import Image
 from sklearn.model_selection import train_test_split
@@ -53,7 +54,7 @@ transform = transforms.Compose([
 ])
 
 # overall ratio = train ratio = test ratio (stratified split)
-all_dataset = MVTecDataset('data/metal_nut/test', transform=transform)
+all_dataset = MVTecDataset('../data/metal_nut/test', transform=transform)
 indices = list(range(len(all_dataset)))
 train_idx, test_idx = train_test_split(indices, test_size=0.2, random_state=42,
                                        stratify=all_dataset.labels)
@@ -70,14 +71,14 @@ print(f"Train: {len(train_dataset)} images, Test: {len(test_dataset)} images")
 
 device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
 
-model = models.efficientnet_b0(weights='IMAGENET1K_V1')
+model = timm.create_model('vit_base_patch16_224', pretrained=True)
 for param in model.parameters():
     param.requires_grad = False
-model.classifier[1] = nn.Linear(1280, 2)  # replace final layer: 1000 → 2
+model.head = nn.Linear(model.head.in_features, 2)  # replace final layer: 1000 → 2
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.classifier[1].parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.head.parameters(), lr=0.001)
 
 
 # ── 4. TRAINING ───────────────────────────────────────────────────────────────
@@ -173,8 +174,8 @@ plt.ylabel('Accuracy %')
 plt.legend()
 
 plt.tight_layout()
-plt.savefig('efficientnet_curves.png')
-print("Curves saved to efficientnet_curves.png")
+plt.savefig('../outputs/vit_curves.png')
+print("Curves saved to vit_curves.png")
 
 # confusion matrix
 cm = confusion_matrix(all_labels, (all_probs > 0.5).astype(int))
@@ -183,6 +184,6 @@ sns.heatmap(cm, annot=True, fmt='d', xticklabels=['normal', 'defective'],
             yticklabels=['normal', 'defective'])
 plt.ylabel('Actual')
 plt.xlabel('Predicted')
-plt.title('EfficientNet-B0 Confusion Matrix')
-plt.savefig('efficientnet_confusion.png')
-print("Confusion matrix saved to efficientnet_confusion.png")
+plt.title('ViT-Base Confusion Matrix')
+plt.savefig('../outputs/vit_confusion.png')
+print("Confusion matrix saved to vit_confusion.png")
